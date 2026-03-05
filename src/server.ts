@@ -5,6 +5,7 @@ import {
 } from './domains/navigation.js';
 import { getDomainHandler } from './domains/index.js';
 import { isConfigured } from './client.js';
+import { elicitTokenIfMissing } from './elicitation/forms.js';
 import { logger } from './utils/logger.js';
 import type { DomainName } from './utils/types.js';
 
@@ -39,6 +40,12 @@ export function createServer(): Server {
     const { name, arguments: args } = request.params;
     const sessionId = (extra as Record<string, unknown>)?.sessionId as string || 'default';
     const state = getState(sessionId);
+
+    // --- Elicitation: collect token if missing (before any action) ---
+    if (!isConfigured() && name !== 'rootly_status') {
+      const elicitError = await elicitTokenIfMissing(server);
+      if (elicitError) return elicitError;
+    }
 
     // --- Navigation: rootly_navigate ---
     if (name === 'rootly_navigate') {
@@ -76,11 +83,15 @@ export function createServer(): Server {
 
     // --- Navigation: rootly_status ---
     if (name === 'rootly_status') {
+      const configured = isConfigured();
       return {
         content: [{
           type: 'text' as const,
           text: JSON.stringify({
-            connected: isConfigured(),
+            connected: configured,
+            ...(!configured && {
+              hint: 'Call rootly_navigate or any tool to be prompted for your API token via elicitation.',
+            }),
             domains: Object.entries(DOMAIN_DESCRIPTIONS).map(([name, desc]) => ({ name, description: desc })),
             currentDomain: state.currentDomain,
           }, null, 2),

@@ -89,6 +89,36 @@ export async function rootlyPost(path: string, data: unknown): Promise<unknown> 
   return handleResponse(res);
 }
 
+export async function rootlyPut(path: string, data: unknown): Promise<unknown> {
+  const token = getToken();
+  checkWriteRateLimit();
+  logger.debug('PUT', { path });
+  const res = await fetch(`${ROOTLY_BASE_URL}${path}`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/vnd.api+json',
+      Accept: 'application/vnd.api+json',
+    },
+    body: JSON.stringify(data),
+  });
+  return handleResponse(res);
+}
+
+export async function rootlyDelete(path: string): Promise<unknown> {
+  const token = getToken();
+  checkWriteRateLimit();
+  logger.debug('DELETE', { path });
+  const res = await fetch(`${ROOTLY_BASE_URL}${path}`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: 'application/vnd.api+json',
+    },
+  });
+  return handleResponse(res);
+}
+
 export async function rootlyPatch(path: string, data: unknown): Promise<unknown> {
   const token = getToken();
   checkWriteRateLimit();

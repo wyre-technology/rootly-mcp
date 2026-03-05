@@ -50,5 +50,5 @@ export const DOMAIN_DESCRIPTIONS: Record<DomainName, string> = {
   incidents: 'Create, list, update, and resolve incidents',
   alerts: 'List, acknowledge, resolve, create, and update alerts',
   schedules: 'View on-call schedules',
-  org: 'List teams, severities, and get current user info',
+  org: 'Full team management (create/get/update/delete), severities, current user',
 };

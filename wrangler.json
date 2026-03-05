@@ -1,0 +1,9 @@
+{
+  "name": "rootly-mcp",
+  "main": "dist/worker.js",
+  "compatibility_date": "2026-02-01",
+  "node_compat": true,
+  "vars": {
+    "LOG_LEVEL": "info"
+  }
+}

@@ -6,6 +6,11 @@ const WRITE_LIMIT = 3;
 const WINDOW_MS = 60_000;
 const writeTimes: number[] = [];
 
+/** For tests only — resets the write window. */
+export function _resetWriteWindow(): void {
+  writeTimes.length = 0;
+}
+
 export function checkWriteRateLimit(): void {
   const now = Date.now();
   while (writeTimes.length > 0 && writeTimes[0]! < now - WINDOW_MS) {

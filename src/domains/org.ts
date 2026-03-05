@@ -93,6 +93,33 @@ function getTools(): Tool[] {
         },
       },
     },
+    {
+      name: 'rootly_org_teams_patch',
+      description:
+        'Safely update specific fields on a team without wiping others. ' +
+        'Fetches the current team, merges your changes, then PUTs the result. ' +
+        'Use this instead of rootly_org_teams_update when you only want to change one or two fields.',
+      inputSchema: {
+        type: 'object',
+        required: ['team_id'],
+        properties: {
+          team_id: { type: 'string', description: 'Team ID to patch' },
+          name: { type: 'string', description: 'New name (optional)' },
+          description: { type: 'string', description: 'New description (optional)' },
+          color: { type: 'string', description: 'New hex color e.g. #FF5733 (optional)' },
+          notify_emails: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Replace notification email list (optional)',
+          },
+          user_ids: {
+            type: 'array',
+            items: { type: 'string' },
+            description: 'Replace team member IDs (optional — omit to keep current members)',
+          },
+        },
+      },
+    },
 
     // ── Severities ────────────────────────────────────────────────────
     {
@@ -172,6 +199,39 @@ async function handleCall(toolName: string, args: Record<string, unknown>): Prom
       case 'rootly_org_teams_delete':
         await rootlyDelete(`/teams/${args.team_id}`);
         return ok({ deleted: true, team_id: args.team_id });
+
+      case 'rootly_org_teams_patch': {
+        // GET current state, merge changes, PUT back — safe partial update
+        const current = await rootlyGet(`/teams/${args.team_id}`) as Record<string, unknown>;
+        const currentAttrs = ((current?.data as Record<string, unknown>)?.attributes ?? {}) as Record<string, unknown>;
+
+        const mergedAttrs: Record<string, unknown> = {
+          ...currentAttrs,
+          ...(args.name !== undefined && { name: args.name }),
+          ...(args.description !== undefined && { description: args.description }),
+          ...(args.color !== undefined && { color: args.color }),
+          ...(args.notify_emails !== undefined && { notify_emails: args.notify_emails }),
+        };
+
+        const payload: Record<string, unknown> = {
+          data: {
+            type: 'teams',
+            id: String(args.team_id),
+            attributes: mergedAttrs,
+          },
+        };
+
+        // Only update members if user_ids was explicitly passed
+        if (args.user_ids !== undefined && Array.isArray(args.user_ids)) {
+          (payload.data as Record<string, unknown>).relationships = {
+            users: {
+              data: (args.user_ids as string[]).map((id) => ({ type: 'users', id })),
+            },
+          };
+        }
+
+        return ok(await rootlyPut(`/teams/${args.team_id}`, payload));
+      }
 
       // ── Severities ─────────────────────────────────────────────────
       case 'rootly_org_severities_list':

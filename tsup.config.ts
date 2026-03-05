@@ -15,4 +15,16 @@ export default defineConfig([
     sourcemap: true,
     banner: { js: '#!/usr/bin/env node' },
   },
+  // Cloudflare Worker build — bundle all deps, esnext target, browser runtime
+  {
+    entry: { worker: 'src/worker.ts' },
+    format: ['esm'],
+    target: 'esnext',
+    platform: 'browser',
+    outDir: 'dist',
+    clean: false, // append to existing dist
+    noExternal: [/.*/], // bundle everything — Workers can't use node_modules
+    sourcemap: true,
+    dts: false,
+  },
 ]);

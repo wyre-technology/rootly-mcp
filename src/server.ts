@@ -1,30 +1,12 @@
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { ListToolsRequestSchema, CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
-import { incidentsModule } from './tools/incidents.js';
-import { alertsModule } from './tools/alerts.js';
-import { schedulesModule } from './tools/schedules.js';
-import { teamsModule } from './tools/teams.js';
-import { severitiesModule } from './tools/severities.js';
-import { usersModule } from './tools/users.js';
+import {
+  getState, getNavigationTools, getBackTool, DOMAIN_DESCRIPTIONS,
+} from './domains/navigation.js';
+import { getDomainHandler } from './domains/index.js';
+import { isConfigured } from './client.js';
 import { logger } from './utils/logger.js';
-import type { ToolModule } from './utils/types.js';
-
-const MODULES: ToolModule[] = [
-  incidentsModule,
-  alertsModule,
-  schedulesModule,
-  teamsModule,
-  severitiesModule,
-  usersModule,
-];
-
-// Build a flat tool→module lookup at startup
-const toolRegistry = new Map<string, ToolModule>();
-for (const mod of MODULES) {
-  for (const tool of mod.getTools()) {
-    toolRegistry.set(tool.name, mod);
-  }
-}
+import type { DomainName } from './utils/types.js';
 
 export function createServer(): Server {
   const server = new Server(
@@ -37,24 +19,89 @@ export function createServer(): Server {
     }
   );
 
-  server.setRequestHandler(ListToolsRequestSchema, async () => {
-    const tools = MODULES.flatMap((m) => m.getTools());
-    return { tools };
+  // Dynamic tool list — based on navigation state
+  server.setRequestHandler(ListToolsRequestSchema, async (_request, extra) => {
+    const sessionId = (extra as Record<string, unknown>)?.sessionId as string || 'default';
+    const state = getState(sessionId);
+
+    if (!state.currentDomain) {
+      // Show navigation tools only
+      return { tools: getNavigationTools() };
+    }
+
+    // Show domain tools + back button
+    const handler = await getDomainHandler(state.currentDomain);
+    return { tools: [...handler.getTools(), getBackTool()] };
   });
 
-  server.setRequestHandler(CallToolRequestSchema, async (request) => {
+  // Route all tool calls through the decision tree
+  server.setRequestHandler(CallToolRequestSchema, async (request, extra) => {
     const { name, arguments: args } = request.params;
-    const mod = toolRegistry.get(name);
+    const sessionId = (extra as Record<string, unknown>)?.sessionId as string || 'default';
+    const state = getState(sessionId);
 
-    if (!mod) {
+    // --- Navigation: rootly_navigate ---
+    if (name === 'rootly_navigate') {
+      const domain = args?.domain as DomainName;
+      if (!['incidents', 'alerts', 'schedules', 'org'].includes(domain)) {
+        return {
+          content: [{ type: 'text' as const, text: `Unknown domain: ${domain}. Choose from: incidents, alerts, schedules, org` }],
+          isError: true,
+        };
+      }
+
+      state.currentDomain = domain;
+      const handler = await getDomainHandler(domain);
+      const toolNames = handler.getTools().map((t) => t.name).join(', ');
+
+      // Notify client to refresh tool list
+      await server.sendToolListChanged();
+
       return {
-        content: [{ type: 'text' as const, text: `Unknown tool: ${name}` }],
+        content: [{
+          type: 'text' as const,
+          text: `Navigated to **${domain}** (${DOMAIN_DESCRIPTIONS[domain]}).\nAvailable tools: ${toolNames}`,
+        }],
+      };
+    }
+
+    // --- Navigation: rootly_back ---
+    if (name === 'rootly_back') {
+      state.currentDomain = null;
+      await server.sendToolListChanged();
+      return {
+        content: [{ type: 'text' as const, text: 'Returned to Rootly domain navigation.' }],
+      };
+    }
+
+    // --- Navigation: rootly_status ---
+    if (name === 'rootly_status') {
+      return {
+        content: [{
+          type: 'text' as const,
+          text: JSON.stringify({
+            connected: isConfigured(),
+            domains: Object.entries(DOMAIN_DESCRIPTIONS).map(([name, desc]) => ({ name, description: desc })),
+            currentDomain: state.currentDomain,
+          }, null, 2),
+        }],
+      };
+    }
+
+    // --- Domain tools ---
+    if (!state.currentDomain) {
+      return {
+        content: [{
+          type: 'text' as const,
+          text: `Unknown tool: ${name}. Use rootly_navigate to select a domain first.`,
+        }],
         isError: true,
       };
     }
 
+    const handler = await getDomainHandler(state.currentDomain);
     try {
-      return await mod.handleCall(name, (args || {}) as Record<string, unknown>);
+      return await handler.handleCall(name, (args || {}) as Record<string, unknown>);
     } catch (error) {
       logger.error('Tool call failed', { tool: name, error: (error as Error).message });
       return {

@@ -1,0 +1,44 @@
+{
+  "manifest_version": "0.3",
+  "name": "rootly-mcp",
+  "display_name": "Rootly MCP Server",
+  "version": "1.0.0",
+  "description": "MCP server for Rootly incident management — incidents, alerts, on-call schedules, teams, and more.",
+  "long_description": "Provides Claude with tools to interact with the Rootly API. Manage incidents, acknowledge and resolve alerts, view on-call schedules, and query teams and severities. Uses decision-tree navigation to keep tools organized.",
+  "author": {
+    "name": "WYRE Technology",
+    "url": "https://github.com/wyre-technology"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wyre-technology/rootly-mcp"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["rootly", "incidents", "alerts", "on-call", "mcp"],
+  "server": {
+    "type": "node",
+    "entry_point": "dist/index.js",
+    "mcp_config": {
+      "command": "node",
+      "args": ["${__dirname}/dist/index.js"],
+      "env": {
+        "ROOTLY_API_TOKEN": "${user_config.api_token}"
+      }
+    }
+  },
+  "tools_generated": true,
+  "user_config": {
+    "api_token": {
+      "type": "string",
+      "title": "Rootly API Token",
+      "description": "Your Rootly API token (from Profile → API Tokens)",
+      "required": true,
+      "sensitive": true
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": { "node": ">=18.0.0" },
+    "claude_desktop": ">=0.10.0"
+  }
+}

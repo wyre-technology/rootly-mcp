@@ -4,38 +4,51 @@ MCP server for the [Rootly](https://rootly.com) incident management platform.
 
 Built by WYRE Technology — part of the wyre-projects MCP server collection.
 
-## Tools
+Uses **decision-tree navigation**: start with `rootly_navigate` to select a domain, then use that domain's tools. Call `rootly_back` to return.
 
-### Incidents
+## Domains & Tools
+
+### Navigation (always available)
 | Tool | Description |
 |------|-------------|
-| `rootly_list_incidents` | List incidents with optional status/severity filters |
-| `rootly_get_incident` | Get a single incident by ID |
-| `rootly_create_incident` | Create a new incident |
-| `rootly_update_incident` | Update title, summary, status, or severity |
-| `rootly_resolve_incident` | Resolve an incident |
+| `rootly_navigate` | Navigate to a domain: `incidents`, `alerts`, `schedules`, `org` |
+| `rootly_status` | Check connection status and available domains |
+| `rootly_back` | Return to the navigation menu |
 
-### Alerts
+### Domain: incidents
 | Tool | Description |
 |------|-------------|
-| `rootly_list_alerts` | List alerts with optional status filter |
-| `rootly_acknowledge_alert` | Acknowledge an alert |
-| `rootly_resolve_alert` | Resolve an alert |
-| `rootly_create_alert` | Create a new alert |
-| `rootly_update_alert` | Update alert status or summary |
+| `rootly_incidents_list` | List incidents with optional status/severity filters |
+| `rootly_incidents_get` | Get a single incident by ID |
+| `rootly_incidents_create` | Create a new incident |
+| `rootly_incidents_update` | Update title, summary, status, or severity |
+| `rootly_incidents_resolve` | Resolve an incident |
 
-### On-Call / Org
+### Domain: alerts
 | Tool | Description |
 |------|-------------|
-| `rootly_list_schedules` | List on-call schedules |
-| `rootly_get_schedule` | Get a single on-call schedule |
-| `rootly_list_teams` | List teams |
-| `rootly_list_severities` | List severity levels |
-| `rootly_get_current_user` | Get current authenticated user |
+| `rootly_alerts_list` | List alerts with optional status filter |
+| `rootly_alerts_acknowledge` | Acknowledge an alert |
+| `rootly_alerts_resolve` | Resolve an alert |
+| `rootly_alerts_create` | Create a new alert |
+| `rootly_alerts_update` | Update alert status or summary |
+
+### Domain: schedules
+| Tool | Description |
+|------|-------------|
+| `rootly_schedules_list` | List on-call schedules |
+| `rootly_schedules_get` | Get a single on-call schedule |
+
+### Domain: org
+| Tool | Description |
+|------|-------------|
+| `rootly_org_list_teams` | List teams |
+| `rootly_org_list_severities` | List severity levels |
+| `rootly_org_current_user` | Get current authenticated user |
 
 ## Setup
 
-### 1. Install dependencies & build
+### 1. Install & build
 
 ```bash
 cd rootly-mcp
@@ -51,15 +64,28 @@ export ROOTLY_API_TOKEN=rootly_xxxxxxxxxxxxxxxx
 
 Get your token from **Rootly → Profile → API Tokens**.
 
-### 3. Run via mcporter
-
-Add to your mcporter config or run directly:
+### 3. Run (stdio — for mcporter/Claude Desktop)
 
 ```bash
 ROOTLY_API_TOKEN=your_token node dist/index.js
 ```
 
-Or via mcporter:
+### 4. Run (HTTP streaming transport)
+
+```bash
+ROOTLY_API_TOKEN=your_token MCP_TRANSPORT=http node dist/http.js
+# Listens on :8080 — /mcp for MCP, /health for health check
+```
+
+### 5. Run with Docker
+
+```bash
+docker compose up
+# or
+docker run -e ROOTLY_API_TOKEN=your_token ghcr.io/wyre-technology/rootly-mcp:latest
+```
+
+## mcporter Configuration
 
 ```json
 {
@@ -73,11 +99,29 @@ Or via mcporter:
 }
 ```
 
-Then: `mcporter call rootly.rootly_list_incidents`
+Then: `mcporter call rootly.rootly_navigate --domain alerts`
+
+## Claude Desktop (MCPB)
+
+Download the `.mcpb` bundle from [Releases](https://github.com/wyre-technology/rootly-mcp/releases) and install it in Claude Desktop.
+
+Or manually add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "rootly": {
+      "command": "node",
+      "args": ["/path/to/rootly-mcp/dist/index.js"],
+      "env": { "ROOTLY_API_TOKEN": "your_token" }
+    }
+  }
+}
+```
 
 ## Rate Limiting
 
-Rootly enforces **3 write operations per 60 seconds**. The server tracks this in-process and returns a descriptive error with retry-after time if you exceed the limit.
+Rootly enforces **3 write operations per 60 seconds**. The server tracks this in-process and returns a descriptive error with retry-after time if exceeded.
 
 ## API Reference
 
@@ -90,7 +134,7 @@ Rootly enforces **3 write operations per 60 seconds**. The server tracks this in
 
 ```bash
 npm run dev        # watch mode
-npm run lint       # TypeScript check
+npm run lint       # TypeScript type-check
 npm run test       # run tests
 ```
 

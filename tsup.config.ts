@@ -25,6 +25,13 @@ export default defineConfig([
     outDir: 'dist',
     clean: false, // append to existing dist
     noExternal: [/.*/], // bundle everything — Workers can't use node_modules
+    // node-rootly uses Node.js builtins and won't work in Workers; stub it out
+    esbuildOptions(options) {
+      options.alias = {
+        ...options.alias,
+        '@wyre-technology/node-rootly': './src/client.worker-stub.ts',
+      };
+    },
     sourcemap: true,
     dts: false,
   },

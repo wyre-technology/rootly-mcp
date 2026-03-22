@@ -17,8 +17,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-        # Remove cache to force fresh install, help debug resolution issues
-      - run: npm cache clean --force && npm ci && npm run build && npm test
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@wyre-technology'
+      - run: npm ci && npm run build && npm test
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

@@ -14,6 +14,7 @@ export default defineConfig([
     dts: true,
     sourcemap: true,
     banner: { js: '#!/usr/bin/env node' },
+    external: ['@wyre-technology/node-rootly'],
   },
   // Cloudflare Worker build — bundle all deps, esnext target, browser runtime
   {

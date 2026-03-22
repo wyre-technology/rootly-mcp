@@ -17,8 +17,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: npm
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@wyre-technology'
       - run: npm ci && npm run build && npm test
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   release:
     needs: test

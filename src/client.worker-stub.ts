@@ -1,10 +1,11 @@
-// Worker stub for @wyre-technology/node-rootly
-// The Cloudflare Worker uses native fetch directly; this module is not used at runtime.
-// This stub exists only to satisfy the TypeScript/esbuild module resolution in the Worker build.
+// Worker/test stub for @wyre-technology/node-rootly
+// Used in Cloudflare Worker build (via tsup alias) and Vitest tests.
 
 export const request = async (_token: string, _path: string, _options?: unknown): Promise<unknown> => {
-  throw new Error('@wyre-technology/node-rootly is not available in Cloudflare Worker environment');
+  throw new Error('@wyre-technology/node-rootly is not available in this environment');
 };
+
+export function _resetWriteWindow(): void {}
 
 export class RootlyClient {}
 export class RootlyError extends Error {}

@@ -1,3 +1,10 @@
+## [1.0.2](https://github.com/wyre-technology/rootly-mcp/compare/v1.0.1...v1.0.2) (2026-04-06)
+
+
+### Bug Fixes
+
+* **ci:** fix node -p shell quoting in release workflow ([b215ced](https://github.com/wyre-technology/rootly-mcp/commit/b215ced6f1f322d5cb9b4c9d49eda183a3aaf574))
+
 ## [1.0.1](https://github.com/wyre-technology/rootly-mcp/compare/v1.0.0...v1.0.1) (2026-04-06)
 
 

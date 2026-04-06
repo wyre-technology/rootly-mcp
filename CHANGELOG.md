@@ -1,3 +1,10 @@
+## [1.0.3](https://github.com/wyre-technology/rootly-mcp/compare/v1.0.2...v1.0.3) (2026-04-06)
+
+
+### Bug Fixes
+
+* per-request MCP Server+Transport for gateway compatibility ([4372cf9](https://github.com/wyre-technology/rootly-mcp/commit/4372cf9f177e8a298ed5fc73d609b785424c794e))
+
 ## [1.0.2](https://github.com/wyre-technology/rootly-mcp/compare/v1.0.1...v1.0.2) (2026-04-06)
 
 

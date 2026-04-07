@@ -1,6 +1,6 @@
 {
   "name": "@wyre-technology/rootly-mcp",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "MCP server for the Rootly incident management platform",
   "type": "module",
   "main": "./dist/index.js",

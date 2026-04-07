@@ -1,3 +1,10 @@
+## [1.0.6](https://github.com/wyre-technology/rootly-mcp/compare/v1.0.5...v1.0.6) (2026-04-07)
+
+
+### Bug Fixes
+
+* **ci:** drop prepare hook so mcpb job's omit=dev install doesn't re-run tsup post-prune ([bf5f1a8](https://github.com/wyre-technology/rootly-mcp/commit/bf5f1a8552fb61d49d9fb4fc645ffbc86eef47b5))
+
 ## [1.0.5](https://github.com/wyre-technology/rootly-mcp/compare/v1.0.4...v1.0.5) (2026-04-07)
 
 

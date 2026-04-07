@@ -1,3 +1,10 @@
+## [1.0.5](https://github.com/wyre-technology/rootly-mcp/compare/v1.0.4...v1.0.5) (2026-04-07)
+
+
+### Bug Fixes
+
+* **docker:** move 'npm prune --omit=dev' to builder stage to preserve GHCR auth ([731bff3](https://github.com/wyre-technology/rootly-mcp/commit/731bff326e645115845d4655f25f099b94fac175))
+
 ## [1.0.4](https://github.com/wyre-technology/rootly-mcp/compare/v1.0.3...v1.0.4) (2026-04-07)
 
 

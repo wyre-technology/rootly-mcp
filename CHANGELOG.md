@@ -1,3 +1,10 @@
+## [1.0.4](https://github.com/wyre-technology/rootly-mcp/compare/v1.0.3...v1.0.4) (2026-04-07)
+
+
+### Bug Fixes
+
+* **ci:** deploy :latest tag, force revision via env var bump ([3523054](https://github.com/wyre-technology/rootly-mcp/commit/35230548c85f5bbdf911ecfac2af6081e4f5a5b9))
+
 ## [1.0.3](https://github.com/wyre-technology/rootly-mcp/compare/v1.0.2...v1.0.3) (2026-04-06)
 
 

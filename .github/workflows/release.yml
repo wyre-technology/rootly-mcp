@@ -115,7 +115,7 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
           scope: '@wyre-technology'
           token: ${{ secrets.GITHUB_TOKEN }}
-      - run: npm ci && npm run build && npm install --production
+      - run: npm ci && npm run build && npm install --omit=dev --ignore-scripts
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npx mcpb pack
